@@ -1,0 +1,12 @@
+/lib
+/build
+/.git
+/node_modules
+/docs
+/tutorials
+package.json
+package-lock.json
+/__tests__
+/CHANGELOG.md
+/README.md
+/LICENSE

@@ -1,0 +1,71 @@
+{
+  "name": "express-restriction",
+  "version": "1.0.0",
+  "description": "Add API restriction to your Express app like Google.",
+  "main": "src/index.js",
+  "scripts": {
+    "commit": "git-cz",
+    "lint": "eslint .",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:active": "eslint-nibble .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "semantic-release": "semantic-release",
+    "docs": "rm -rf docs && jsdoc --configure jsdoc.json",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ridvanaltun/express-restriction.git"
+  },
+  "keywords": [
+    "express",
+    "restriction",
+    "restrict",
+    "security"
+  ],
+  "author": "Ridvan Altun",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ridvanaltun/express-restriction/issues"
+  },
+  "homepage": "https://github.com/ridvanaltun/express-restriction#readme",
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "@commitlint/cz-commitlint"
+    }
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.15.7",
+    "@commitlint/cli": "^13.1.0",
+    "@commitlint/config-conventional": "^13.1.0",
+    "@commitlint/cz-commitlint": "^13.1.0",
+    "@semantic-release/changelog": "^5.0.1",
+    "@semantic-release/git": "^9.0.1",
+    "commitizen": "^4.2.4",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-nibble": "^7.0.0",
+    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-jsdoc": "^36.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "husky": "^7.0.2",
+    "jsdoc": "^3.6.7",
+    "lint-staged": "^11.1.2",
+    "minami": "^1.2.3",
+    "prettier": "^2.4.1",
+    "semantic-release": "^17.4.7"
+  },
+  "dependencies": {
+    "http-errors": "^1.8.0",
+    "ip-cidr": "^3.0.4"
+  }
+}
