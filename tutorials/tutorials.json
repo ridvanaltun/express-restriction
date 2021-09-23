@@ -1,17 +1,14 @@
 {
-  "01-getting-started": {
-    "title": "Getting Started"
-  },
-  "02-http-referrers": {
+  "01-http-referrers": {
     "title": "HTTP Referrers"
   },
-  "03-ip-addresses": {
+  "02-ip-addresses": {
     "title": "IP Addresses"
   },
-  "04-android-apps": {
+  "03-android-apps": {
     "title": "Android Apps"
   },
-  "05-ios-apps": {
+  "04-ios-apps": {
     "title": "iOS Apps"
   }
 }
