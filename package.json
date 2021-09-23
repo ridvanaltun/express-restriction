@@ -1,6 +1,6 @@
 {
   "name": "express-restriction",
-  "version": "0.0.0-semantically-released",
+  "version": "1.0.0",
   "description": "Add API restriction to your Express app like Google.",
   "main": "src/index.js",
   "scripts": {
