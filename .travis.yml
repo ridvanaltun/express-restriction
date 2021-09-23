@@ -7,7 +7,9 @@ jobs:
   include:
     - stage: test
       script:
+        - echo "Testing Started ..."
         - echo "Linting ..." && npm run lint
+        - echo "Code Coverage and Test ..." && npm run test:coverage
         - echo "Create Documentation ..." && npm run docs
 after-success:
   - echo "Semantic Release Deployment .."

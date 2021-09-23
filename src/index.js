@@ -1,5 +1,6 @@
 const net = require('net')
 const IPCIDR = require('ip-cidr')
+const wcmatch = require('wildcard-match')
 const createError = require('http-errors')
 
 const restrictionError = () =>
@@ -17,7 +18,7 @@ const restrictionError = () =>
  */
 
 /**
- * You can restrict an API key to specific Android applications by providing a debug certificate fingerprint or a release certificate fingerprint
+ * You can restrict an APP to specific Android applications by providing a debug certificate fingerprint or a release certificate fingerprint
  *
  * @typedef {string} CertificateFingerprint
  */
@@ -34,14 +35,16 @@ const restrictionError = () =>
  * @param {Array.<AndroidApp>}  androidApps List of Android apps.
  * @returns {ExpressMiddleware} middleware
  */
-module.android = androidApps => {
+exports.android = androidApps => {
   return (req, res, next) => {
-    androidApps.forEach(({ packageName, signature }) => {
+    const isMatch = androidApps.some(({ packageName, signature }) => {
       const isPackageName = req.headers['x-android-package'] === packageName
       const isSignature = req.headers['x-android-cert'] === signature
 
-      if (isPackageName && isSignature) return next()
+      return isPackageName && isSignature
     })
+
+    if (isMatch) return next()
 
     return next(restrictionError())
   }
@@ -53,23 +56,25 @@ module.android = androidApps => {
  * @param {Array} bundleIdentifiers List of iOS bundle identifiers.
  * @returns {ExpressMiddleware} middleware
  */
-module.ios = bundleIdentifiers => {
+exports.ios = bundleIdentifiers => {
   return (req, res, next) => {
-    bundleIdentifiers.forEach(bundleIdentifier => {
+    const isMatch = bundleIdentifiers.some(bundleIdentifier => {
       const isBundleIdentifier =
         req.headers['x-ios-bundle-identifier'] === bundleIdentifier
 
-      if (isBundleIdentifier) return next()
+      return isBundleIdentifier
     })
+
+    if (isMatch) return next()
 
     return next(restrictionError())
   }
 }
 
 /**
- * How do I restrict my API key to specific websites?
+ * How do I restrict my APP key to specific websites?
  *
- * Use an HTTP referrer to restrict the URLs that can use an API key.
+ * Use an HTTP referrer to restrict the URLs that can use an APP.
  * Here are some examples of URLs that you can allow to set up a referrer:
  *
  * - A specific URL with an exact path: www.example.com/path
@@ -89,17 +94,26 @@ module.ios = bundleIdentifiers => {
  * @param {Array.<HTTPReferrer>} httpReferrers List of HTTP referrers, like *.example.com/*.
  * @returns {ExpressMiddleware} middleware
  */
-module.website = httpReferrers => {
+exports.website = httpReferrers => {
   return (req, res, next) => {
-    httpReferrers.forEach(referrer => {
-      // referer has 2 spelling, use both
-      const requestReferrer = req.headers.referrer || req.headers.referer
-      const isReferrerMatch = requestReferrer === referrer
+    // referer has 2 spelling, use both
+    const requestReferrer = req.headers.referrer || req.headers.referer
 
-      //  @TODO cheat: https://github.com/brannondorsey/host-validation/blob/master/index.js
+    // remove fragments (#) and queries (?)
+    const urlClearedFragment = requestReferrer.split('#')[0]
+    const urlClearedQuery = urlClearedFragment.split('?')[0]
 
-      if (isReferrerMatch) return next()
+    const clearUrl = urlClearedQuery
+
+    // iterate all http referrers
+    const isMatch = httpReferrers.some(referrer => {
+      const isMatch = wcmatch(referrer)
+      const isUrlMatch = isMatch(clearUrl)
+
+      return isUrlMatch
     })
+
+    if (isMatch) return next()
 
     return next(restrictionError())
   }
@@ -119,7 +133,7 @@ module.website = httpReferrers => {
  * @param {boolean} [options.behindProxy=false]  Is this app running over a proxy?, like NGINX? Don't forget to bind client IP address to x-forwarded-for as header in proxy server.
  * @returns {ExpressMiddleware} middleware
  */
-module.ip = (ipAddresses, options = { behindProxy: false }) => {
+exports.ip = (ipAddresses, options = { behindProxy: false }) => {
   return (req, res, next) => {
     // req.connection.remoteAddress always equals to 127.0.0.1 if the app running over a proxy
     // therefore need to check request header to learn request ip address
@@ -128,7 +142,7 @@ module.ip = (ipAddresses, options = { behindProxy: false }) => {
       ? req.headers['x-forwarded-for']
       : null
 
-    const ipAddrDefault = req.connection.remoteAddress
+    const ipAddrDefault = req?.connection?.remoteAddress
 
     const clientIpRaw = ipAddrWhenBehingProxy || ipAddrDefault
 
@@ -138,9 +152,10 @@ module.ip = (ipAddresses, options = { behindProxy: false }) => {
 
     const isClientIpAllowed = ipAddresses.some(ipAddress => {
       const isIp = net.isIP(ipAddress) !== 0
-      const isCIDR = IPCIDR.isValidAddress(ipAddress)
 
       if (isIp) return ipAddress === clientIp
+
+      const isCIDR = IPCIDR.isValidAddress(ipAddress)
 
       if (isCIDR) {
         const cidr = new IPCIDR(ipAddress)
